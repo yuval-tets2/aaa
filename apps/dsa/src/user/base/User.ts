@@ -11,14 +11,37 @@ https://docs.amplication.com/how-to/custom-code
   */
 import { ObjectType, Field } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDate, IsString, IsOptional } from "class-validator";
+import { Account } from "../../account/base/Account";
+import {
+  ValidateNested,
+  IsOptional,
+  IsDate,
+  IsString,
+  IsEnum,
+  IsBoolean,
+} from "class-validator";
 import { Type } from "class-transformer";
+import { EnumUserIdentityProvider } from "./EnumUserIdentityProvider";
+import { Invite } from "../../invite/base/Invite";
+import { Membership } from "../../membership/base/Membership";
 import { IsJSONValue } from "@app/custom-validators";
 import { GraphQLJSON } from "graphql-type-json";
 import { JsonValue } from "type-fest";
+import { EnumUserObjective } from "./EnumUserObjective";
+import { ResponseNote } from "../../responseNote/base/ResponseNote";
+import { EnumUserRole } from "./EnumUserRole";
 
 @ObjectType()
 class User {
+  @ApiProperty({
+    required: false,
+    type: () => [Account],
+  })
+  @ValidateNested()
+  @Type(() => Account)
+  @IsOptional()
+  accounts?: Array<Account>;
+
   @ApiProperty({
     required: true,
   })
@@ -26,6 +49,25 @@ class User {
   @Type(() => Date)
   @Field(() => Date)
   createdAt!: Date;
+
+  @ApiProperty({
+    required: true,
+    type: String,
+  })
+  @IsString()
+  @Field(() => String)
+  email!: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsDate()
+  @Type(() => Date)
+  @IsOptional()
+  @Field(() => Date, {
+    nullable: true,
+  })
+  emailVerified!: Date | null;
 
   @ApiProperty({
     required: false,
@@ -36,7 +78,7 @@ class User {
   @Field(() => String, {
     nullable: true,
   })
-  firstName!: string | null;
+  groupId!: string | null;
 
   @ApiProperty({
     required: true,
@@ -47,6 +89,16 @@ class User {
   id!: string;
 
   @ApiProperty({
+    required: true,
+    enum: EnumUserIdentityProvider,
+  })
+  @IsEnum(EnumUserIdentityProvider)
+  @Field(() => EnumUserIdentityProvider, {
+    nullable: true,
+  })
+  identityProvider?: "email" | "github" | "google";
+
+  @ApiProperty({
     required: false,
     type: String,
   })
@@ -55,14 +107,104 @@ class User {
   @Field(() => String, {
     nullable: true,
   })
-  lastName!: string | null;
+  identityProviderAccountId!: string | null;
+
+  @ApiProperty({
+    required: false,
+    type: () => [Invite],
+  })
+  @ValidateNested()
+  @Type(() => Invite)
+  @IsOptional()
+  invitesAccepted?: Array<Invite>;
+
+  @ApiProperty({
+    required: false,
+    type: () => [Invite],
+  })
+  @ValidateNested()
+  @Type(() => Invite)
+  @IsOptional()
+  invitesCreated?: Array<Invite>;
+
+  @ApiProperty({
+    required: false,
+    type: () => [Membership],
+  })
+  @ValidateNested()
+  @Type(() => Membership)
+  @IsOptional()
+  memberships?: Array<Membership>;
+
+  @ApiProperty({
+    required: false,
+    type: String,
+  })
+  @IsString()
+  @IsOptional()
+  @Field(() => String, {
+    nullable: true,
+  })
+  name!: string | null;
 
   @ApiProperty({
     required: true,
   })
   @IsJSONValue()
   @Field(() => GraphQLJSON)
-  roles!: JsonValue;
+  notificationSettings!: JsonValue;
+
+  @ApiProperty({
+    required: false,
+    enum: EnumUserObjective,
+  })
+  @IsEnum(EnumUserObjective)
+  @IsOptional()
+  @Field(() => EnumUserObjective, {
+    nullable: true,
+  })
+  objective?:
+    | "increase_conversion"
+    | "improve_user_retention"
+    | "increase_user_adoption"
+    | "sharpen_marketing_messaging"
+    | "support_sales"
+    | "other"
+    | null;
+
+  @ApiProperty({
+    required: true,
+    type: Boolean,
+  })
+  @IsBoolean()
+  @Field(() => Boolean)
+  onboardingCompleted!: boolean;
+
+  @ApiProperty({
+    required: false,
+    type: () => [ResponseNote],
+  })
+  @ValidateNested()
+  @Type(() => ResponseNote)
+  @IsOptional()
+  responseNotes?: Array<ResponseNote>;
+
+  @ApiProperty({
+    required: false,
+    enum: EnumUserRole,
+  })
+  @IsEnum(EnumUserRole)
+  @IsOptional()
+  @Field(() => EnumUserRole, {
+    nullable: true,
+  })
+  role?:
+    | "project_manager"
+    | "engineer"
+    | "founder"
+    | "marketing_specialist"
+    | "other"
+    | null;
 
   @ApiProperty({
     required: true,

@@ -1,5 +1,7 @@
-import { PostListRelationFilter } from "../post/PostListRelationFilter";
+import { EnvironmentWhereUniqueInput } from "../environment/EnvironmentWhereUniqueInput";
+import { TagsOnResponseListRelationFilter } from "../tagsOnResponse/TagsOnResponseListRelationFilter";
 
 export type TagWhereInput = {
-  posts?: PostListRelationFilter;
+  environment?: EnvironmentWhereUniqueInput;
+  responses?: TagsOnResponseListRelationFilter;
 };

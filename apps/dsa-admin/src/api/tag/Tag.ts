@@ -1,10 +1,11 @@
-import { Post } from "../post/Post";
+import { Environment } from "../environment/Environment";
+import { TagsOnResponse } from "../tagsOnResponse/TagsOnResponse";
 
 export type Tag = {
   createdAt: Date;
+  environment?: Environment;
   id: string;
   name: string;
-  posts?: Array<Post>;
-  slug: string | null;
+  responses?: Array<TagsOnResponse>;
   updatedAt: Date;
 };

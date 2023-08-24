@@ -23,7 +23,18 @@ import { UserWhereUniqueInput } from "./UserWhereUniqueInput";
 import { UserFindManyArgs } from "./UserFindManyArgs";
 import { UserUpdateInput } from "./UserUpdateInput";
 import { User } from "./User";
-import { Post } from "../../post/base/Post";
+import { AccountFindManyArgs } from "../../account/base/AccountFindManyArgs";
+import { Account } from "../../account/base/Account";
+import { AccountWhereUniqueInput } from "../../account/base/AccountWhereUniqueInput";
+import { InviteFindManyArgs } from "../../invite/base/InviteFindManyArgs";
+import { Invite } from "../../invite/base/Invite";
+import { InviteWhereUniqueInput } from "../../invite/base/InviteWhereUniqueInput";
+import { MembershipFindManyArgs } from "../../membership/base/MembershipFindManyArgs";
+import { Membership } from "../../membership/base/Membership";
+import { MembershipWhereUniqueInput } from "../../membership/base/MembershipWhereUniqueInput";
+import { ResponseNoteFindManyArgs } from "../../responseNote/base/ResponseNoteFindManyArgs";
+import { ResponseNote } from "../../responseNote/base/ResponseNote";
+import { ResponseNoteWhereUniqueInput } from "../../responseNote/base/ResponseNoteWhereUniqueInput";
 
 export class UserControllerBase {
   constructor(protected readonly service: UserService) {}
@@ -34,10 +45,17 @@ export class UserControllerBase {
       data: data,
       select: {
         createdAt: true,
-        firstName: true,
+        email: true,
+        emailVerified: true,
+        groupId: true,
         id: true,
-        lastName: true,
-        roles: true,
+        identityProvider: true,
+        identityProviderAccountId: true,
+        name: true,
+        notificationSettings: true,
+        objective: true,
+        onboardingCompleted: true,
+        role: true,
         updatedAt: true,
       },
     });
@@ -52,10 +70,17 @@ export class UserControllerBase {
       ...args,
       select: {
         createdAt: true,
-        firstName: true,
+        email: true,
+        emailVerified: true,
+        groupId: true,
         id: true,
-        lastName: true,
-        roles: true,
+        identityProvider: true,
+        identityProviderAccountId: true,
+        name: true,
+        notificationSettings: true,
+        objective: true,
+        onboardingCompleted: true,
+        role: true,
         updatedAt: true,
       },
     });
@@ -71,10 +96,17 @@ export class UserControllerBase {
       where: params,
       select: {
         createdAt: true,
-        firstName: true,
+        email: true,
+        emailVerified: true,
+        groupId: true,
         id: true,
-        lastName: true,
-        roles: true,
+        identityProvider: true,
+        identityProviderAccountId: true,
+        name: true,
+        notificationSettings: true,
+        objective: true,
+        onboardingCompleted: true,
+        role: true,
         updatedAt: true,
       },
     });
@@ -99,10 +131,17 @@ export class UserControllerBase {
         data: data,
         select: {
           createdAt: true,
-          firstName: true,
+          email: true,
+          emailVerified: true,
+          groupId: true,
           id: true,
-          lastName: true,
-          roles: true,
+          identityProvider: true,
+          identityProviderAccountId: true,
+          name: true,
+          notificationSettings: true,
+          objective: true,
+          onboardingCompleted: true,
+          role: true,
           updatedAt: true,
         },
       });
@@ -127,10 +166,17 @@ export class UserControllerBase {
         where: params,
         select: {
           createdAt: true,
-          firstName: true,
+          email: true,
+          emailVerified: true,
+          groupId: true,
           id: true,
-          lastName: true,
-          roles: true,
+          identityProvider: true,
+          identityProviderAccountId: true,
+          name: true,
+          notificationSettings: true,
+          objective: true,
+          onboardingCompleted: true,
+          role: true,
           updatedAt: true,
         },
       });
@@ -142,5 +188,465 @@ export class UserControllerBase {
       }
       throw error;
     }
+  }
+
+  @common.Get("/:id/accounts")
+  @ApiNestedQuery(AccountFindManyArgs)
+  async findManyAccounts(
+    @common.Req() request: Request,
+    @common.Param() params: UserWhereUniqueInput
+  ): Promise<Account[]> {
+    const query = plainToClass(AccountFindManyArgs, request.query);
+    const results = await this.service.findAccounts(params.id, {
+      ...query,
+      select: {
+        accessToken: true,
+        createdAt: true,
+        expiresAt: true,
+        id: true,
+        idToken: true,
+        provider: true,
+        providerAccountId: true,
+        refreshToken: true,
+        scope: true,
+        sessionState: true,
+        tokenType: true,
+        typeField: true,
+        updatedAt: true,
+
+        user: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+    if (results === null) {
+      throw new errors.NotFoundException(
+        `No resource was found for ${JSON.stringify(params)}`
+      );
+    }
+    return results;
+  }
+
+  @common.Post("/:id/accounts")
+  async connectAccounts(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: AccountWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      accounts: {
+        connect: body,
+      },
+    };
+    await this.service.update({
+      where: params,
+      data,
+      select: { id: true },
+    });
+  }
+
+  @common.Patch("/:id/accounts")
+  async updateAccounts(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: AccountWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      accounts: {
+        set: body,
+      },
+    };
+    await this.service.update({
+      where: params,
+      data,
+      select: { id: true },
+    });
+  }
+
+  @common.Delete("/:id/accounts")
+  async disconnectAccounts(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: AccountWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      accounts: {
+        disconnect: body,
+      },
+    };
+    await this.service.update({
+      where: params,
+      data,
+      select: { id: true },
+    });
+  }
+
+  @common.Get("/:id/invitesAccepted")
+  @ApiNestedQuery(InviteFindManyArgs)
+  async findManyInvitesAccepted(
+    @common.Req() request: Request,
+    @common.Param() params: UserWhereUniqueInput
+  ): Promise<Invite[]> {
+    const query = plainToClass(InviteFindManyArgs, request.query);
+    const results = await this.service.findInvitesAccepted(params.id, {
+      ...query,
+      select: {
+        accepted: true,
+
+        acceptor: {
+          select: {
+            id: true,
+          },
+        },
+
+        createdAt: true,
+
+        creator: {
+          select: {
+            id: true,
+          },
+        },
+
+        email: true,
+        expiresAt: true,
+        id: true,
+        name: true,
+        role: true,
+
+        team: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+    if (results === null) {
+      throw new errors.NotFoundException(
+        `No resource was found for ${JSON.stringify(params)}`
+      );
+    }
+    return results;
+  }
+
+  @common.Post("/:id/invitesAccepted")
+  async connectInvitesAccepted(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: InviteWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      invitesAccepted: {
+        connect: body,
+      },
+    };
+    await this.service.update({
+      where: params,
+      data,
+      select: { id: true },
+    });
+  }
+
+  @common.Patch("/:id/invitesAccepted")
+  async updateInvitesAccepted(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: InviteWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      invitesAccepted: {
+        set: body,
+      },
+    };
+    await this.service.update({
+      where: params,
+      data,
+      select: { id: true },
+    });
+  }
+
+  @common.Delete("/:id/invitesAccepted")
+  async disconnectInvitesAccepted(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: InviteWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      invitesAccepted: {
+        disconnect: body,
+      },
+    };
+    await this.service.update({
+      where: params,
+      data,
+      select: { id: true },
+    });
+  }
+
+  @common.Get("/:id/invitesCreated")
+  @ApiNestedQuery(InviteFindManyArgs)
+  async findManyInvitesCreated(
+    @common.Req() request: Request,
+    @common.Param() params: UserWhereUniqueInput
+  ): Promise<Invite[]> {
+    const query = plainToClass(InviteFindManyArgs, request.query);
+    const results = await this.service.findInvitesCreated(params.id, {
+      ...query,
+      select: {
+        accepted: true,
+
+        acceptor: {
+          select: {
+            id: true,
+          },
+        },
+
+        createdAt: true,
+
+        creator: {
+          select: {
+            id: true,
+          },
+        },
+
+        email: true,
+        expiresAt: true,
+        id: true,
+        name: true,
+        role: true,
+
+        team: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+    if (results === null) {
+      throw new errors.NotFoundException(
+        `No resource was found for ${JSON.stringify(params)}`
+      );
+    }
+    return results;
+  }
+
+  @common.Post("/:id/invitesCreated")
+  async connectInvitesCreated(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: InviteWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      invitesCreated: {
+        connect: body,
+      },
+    };
+    await this.service.update({
+      where: params,
+      data,
+      select: { id: true },
+    });
+  }
+
+  @common.Patch("/:id/invitesCreated")
+  async updateInvitesCreated(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: InviteWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      invitesCreated: {
+        set: body,
+      },
+    };
+    await this.service.update({
+      where: params,
+      data,
+      select: { id: true },
+    });
+  }
+
+  @common.Delete("/:id/invitesCreated")
+  async disconnectInvitesCreated(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: InviteWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      invitesCreated: {
+        disconnect: body,
+      },
+    };
+    await this.service.update({
+      where: params,
+      data,
+      select: { id: true },
+    });
+  }
+
+  @common.Get("/:id/memberships")
+  @ApiNestedQuery(MembershipFindManyArgs)
+  async findManyMemberships(
+    @common.Req() request: Request,
+    @common.Param() params: UserWhereUniqueInput
+  ): Promise<Membership[]> {
+    const query = plainToClass(MembershipFindManyArgs, request.query);
+    const results = await this.service.findMemberships(params.id, {
+      ...query,
+      select: {
+        accepted: true,
+        id: true,
+        role: true,
+
+        team: {
+          select: {
+            id: true,
+          },
+        },
+
+        user: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+    if (results === null) {
+      throw new errors.NotFoundException(
+        `No resource was found for ${JSON.stringify(params)}`
+      );
+    }
+    return results;
+  }
+
+  @common.Post("/:id/memberships")
+  async connectMemberships(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: MembershipWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      memberships: {
+        connect: body,
+      },
+    };
+    await this.service.update({
+      where: params,
+      data,
+      select: { id: true },
+    });
+  }
+
+  @common.Patch("/:id/memberships")
+  async updateMemberships(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: MembershipWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      memberships: {
+        set: body,
+      },
+    };
+    await this.service.update({
+      where: params,
+      data,
+      select: { id: true },
+    });
+  }
+
+  @common.Delete("/:id/memberships")
+  async disconnectMemberships(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: MembershipWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      memberships: {
+        disconnect: body,
+      },
+    };
+    await this.service.update({
+      where: params,
+      data,
+      select: { id: true },
+    });
+  }
+
+  @common.Get("/:id/responseNotes")
+  @ApiNestedQuery(ResponseNoteFindManyArgs)
+  async findManyResponseNotes(
+    @common.Req() request: Request,
+    @common.Param() params: UserWhereUniqueInput
+  ): Promise<ResponseNote[]> {
+    const query = plainToClass(ResponseNoteFindManyArgs, request.query);
+    const results = await this.service.findResponseNotes(params.id, {
+      ...query,
+      select: {
+        createdAt: true,
+        id: true,
+
+        response: {
+          select: {
+            id: true,
+          },
+        },
+
+        text: true,
+        updatedAt: true,
+
+        user: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+    if (results === null) {
+      throw new errors.NotFoundException(
+        `No resource was found for ${JSON.stringify(params)}`
+      );
+    }
+    return results;
+  }
+
+  @common.Post("/:id/responseNotes")
+  async connectResponseNotes(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: ResponseNoteWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      responseNotes: {
+        connect: body,
+      },
+    };
+    await this.service.update({
+      where: params,
+      data,
+      select: { id: true },
+    });
+  }
+
+  @common.Patch("/:id/responseNotes")
+  async updateResponseNotes(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: ResponseNoteWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      responseNotes: {
+        set: body,
+      },
+    };
+    await this.service.update({
+      where: params,
+      data,
+      select: { id: true },
+    });
+  }
+
+  @common.Delete("/:id/responseNotes")
+  async disconnectResponseNotes(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: ResponseNoteWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      responseNotes: {
+        disconnect: body,
+      },
+    };
+    await this.service.update({
+      where: params,
+      data,
+      select: { id: true },
+    });
   }
 }

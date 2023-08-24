@@ -11,23 +11,39 @@ https://docs.amplication.com/how-to/custom-code
   */
 import { InputType, Field } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsOptional } from "class-validator";
+import { AccountUpdateManyWithoutUsersInput } from "./AccountUpdateManyWithoutUsersInput";
+import {
+  ValidateNested,
+  IsOptional,
+  IsString,
+  IsDate,
+  IsEnum,
+  IsBoolean,
+} from "class-validator";
+import { Type } from "class-transformer";
+import { EnumUserIdentityProvider } from "./EnumUserIdentityProvider";
+import { InviteUpdateManyWithoutUsersInput } from "./InviteUpdateManyWithoutUsersInput";
+import { MembershipUpdateManyWithoutUsersInput } from "./MembershipUpdateManyWithoutUsersInput";
 import { IsJSONValue } from "@app/custom-validators";
 import { GraphQLJSON } from "graphql-type-json";
 import { InputJsonValue } from "../../types";
+import { EnumUserObjective } from "./EnumUserObjective";
+import { ResponseNoteUpdateManyWithoutUsersInput } from "./ResponseNoteUpdateManyWithoutUsersInput";
+import { EnumUserRole } from "./EnumUserRole";
 
 @InputType()
 class UserUpdateInput {
   @ApiProperty({
     required: false,
-    type: String,
+    type: () => AccountUpdateManyWithoutUsersInput,
   })
-  @IsString()
+  @ValidateNested()
+  @Type(() => AccountUpdateManyWithoutUsersInput)
   @IsOptional()
-  @Field(() => String, {
+  @Field(() => AccountUpdateManyWithoutUsersInput, {
     nullable: true,
   })
-  firstName?: string | null;
+  accounts?: AccountUpdateManyWithoutUsersInput;
 
   @ApiProperty({
     required: false,
@@ -38,7 +54,98 @@ class UserUpdateInput {
   @Field(() => String, {
     nullable: true,
   })
-  lastName?: string | null;
+  email?: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsDate()
+  @Type(() => Date)
+  @IsOptional()
+  @Field(() => Date, {
+    nullable: true,
+  })
+  emailVerified?: Date | null;
+
+  @ApiProperty({
+    required: false,
+    type: String,
+  })
+  @IsString()
+  @IsOptional()
+  @Field(() => String, {
+    nullable: true,
+  })
+  groupId?: string | null;
+
+  @ApiProperty({
+    required: false,
+    enum: EnumUserIdentityProvider,
+  })
+  @IsEnum(EnumUserIdentityProvider)
+  @IsOptional()
+  @Field(() => EnumUserIdentityProvider, {
+    nullable: true,
+  })
+  identityProvider?: "email" | "github" | "google";
+
+  @ApiProperty({
+    required: false,
+    type: String,
+  })
+  @IsString()
+  @IsOptional()
+  @Field(() => String, {
+    nullable: true,
+  })
+  identityProviderAccountId?: string | null;
+
+  @ApiProperty({
+    required: false,
+    type: () => InviteUpdateManyWithoutUsersInput,
+  })
+  @ValidateNested()
+  @Type(() => InviteUpdateManyWithoutUsersInput)
+  @IsOptional()
+  @Field(() => InviteUpdateManyWithoutUsersInput, {
+    nullable: true,
+  })
+  invitesAccepted?: InviteUpdateManyWithoutUsersInput;
+
+  @ApiProperty({
+    required: false,
+    type: () => InviteUpdateManyWithoutUsersInput,
+  })
+  @ValidateNested()
+  @Type(() => InviteUpdateManyWithoutUsersInput)
+  @IsOptional()
+  @Field(() => InviteUpdateManyWithoutUsersInput, {
+    nullable: true,
+  })
+  invitesCreated?: InviteUpdateManyWithoutUsersInput;
+
+  @ApiProperty({
+    required: false,
+    type: () => MembershipUpdateManyWithoutUsersInput,
+  })
+  @ValidateNested()
+  @Type(() => MembershipUpdateManyWithoutUsersInput)
+  @IsOptional()
+  @Field(() => MembershipUpdateManyWithoutUsersInput, {
+    nullable: true,
+  })
+  memberships?: MembershipUpdateManyWithoutUsersInput;
+
+  @ApiProperty({
+    required: false,
+    type: String,
+  })
+  @IsString()
+  @IsOptional()
+  @Field(() => String, {
+    nullable: true,
+  })
+  name?: string | null;
 
   @ApiProperty({
     required: false,
@@ -48,7 +155,65 @@ class UserUpdateInput {
   @Field(() => GraphQLJSON, {
     nullable: true,
   })
-  roles?: InputJsonValue;
+  notificationSettings?: InputJsonValue;
+
+  @ApiProperty({
+    required: false,
+    enum: EnumUserObjective,
+  })
+  @IsEnum(EnumUserObjective)
+  @IsOptional()
+  @Field(() => EnumUserObjective, {
+    nullable: true,
+  })
+  objective?:
+    | "increase_conversion"
+    | "improve_user_retention"
+    | "increase_user_adoption"
+    | "sharpen_marketing_messaging"
+    | "support_sales"
+    | "other"
+    | null;
+
+  @ApiProperty({
+    required: false,
+    type: Boolean,
+  })
+  @IsBoolean()
+  @IsOptional()
+  @Field(() => Boolean, {
+    nullable: true,
+  })
+  onboardingCompleted?: boolean;
+
+  @ApiProperty({
+    required: false,
+    type: () => ResponseNoteUpdateManyWithoutUsersInput,
+  })
+  @ValidateNested()
+  @Type(() => ResponseNoteUpdateManyWithoutUsersInput)
+  @IsOptional()
+  @Field(() => ResponseNoteUpdateManyWithoutUsersInput, {
+    nullable: true,
+  })
+  responseNotes?: ResponseNoteUpdateManyWithoutUsersInput;
+
+  @ApiProperty({
+    required: false,
+    enum: EnumUserRole,
+  })
+  @IsEnum(EnumUserRole)
+  @IsOptional()
+  @Field(() => EnumUserRole, {
+    nullable: true,
+  })
+  role?:
+    | "project_manager"
+    | "engineer"
+    | "founder"
+    | "marketing_specialist"
+    | "other"
+    | null;
 }
 
 export { UserUpdateInput as UserUpdateInput };
