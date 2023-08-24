@@ -10,7 +10,7 @@ https://docs.amplication.com/how-to/custom-code
 ------------------------------------------------------------------------------
   */
 import { PrismaService } from "../../prisma/prisma.service";
-import { Prisma, Tag, Post } from "@prisma/client";
+import { Prisma, Tag, TagsOnResponse, Environment } from "@prisma/client";
 
 export class TagServiceBase {
   constructor(protected readonly prisma: PrismaService) {}
@@ -47,14 +47,22 @@ export class TagServiceBase {
     return this.prisma.tag.delete(args);
   }
 
-  async findPosts(
+  async findResponses(
     parentId: string,
-    args: Prisma.PostFindManyArgs
-  ): Promise<Post[]> {
+    args: Prisma.TagsOnResponseFindManyArgs
+  ): Promise<TagsOnResponse[]> {
     return this.prisma.tag
       .findUniqueOrThrow({
         where: { id: parentId },
       })
-      .posts(args);
+      .responses(args);
+  }
+
+  async getEnvironment(parentId: string): Promise<Environment | null> {
+    return this.prisma.tag
+      .findUnique({
+        where: { id: parentId },
+      })
+      .environment();
   }
 }

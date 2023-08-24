@@ -11,23 +11,36 @@ https://docs.amplication.com/how-to/custom-code
   */
 import { InputType, Field } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
-import { PostListRelationFilter } from "../../post/base/PostListRelationFilter";
+import { EnvironmentWhereUniqueInput } from "../../environment/base/EnvironmentWhereUniqueInput";
 import { ValidateNested, IsOptional } from "class-validator";
 import { Type } from "class-transformer";
+import { TagsOnResponseListRelationFilter } from "../../tagsOnResponse/base/TagsOnResponseListRelationFilter";
 
 @InputType()
 class TagWhereInput {
   @ApiProperty({
     required: false,
-    type: () => PostListRelationFilter,
+    type: () => EnvironmentWhereUniqueInput,
   })
   @ValidateNested()
-  @Type(() => PostListRelationFilter)
+  @Type(() => EnvironmentWhereUniqueInput)
   @IsOptional()
-  @Field(() => PostListRelationFilter, {
+  @Field(() => EnvironmentWhereUniqueInput, {
     nullable: true,
   })
-  posts?: PostListRelationFilter;
+  environment?: EnvironmentWhereUniqueInput;
+
+  @ApiProperty({
+    required: false,
+    type: () => TagsOnResponseListRelationFilter,
+  })
+  @ValidateNested()
+  @Type(() => TagsOnResponseListRelationFilter)
+  @IsOptional()
+  @Field(() => TagsOnResponseListRelationFilter, {
+    nullable: true,
+  })
+  responses?: TagsOnResponseListRelationFilter;
 }
 
 export { TagWhereInput as TagWhereInput };

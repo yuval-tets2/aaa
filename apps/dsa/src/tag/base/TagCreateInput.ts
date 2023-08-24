@@ -11,12 +11,22 @@ https://docs.amplication.com/how-to/custom-code
   */
 import { InputType, Field } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsString, ValidateNested, IsOptional } from "class-validator";
-import { PostCreateNestedManyWithoutTagsInput } from "./PostCreateNestedManyWithoutTagsInput";
+import { EnvironmentWhereUniqueInput } from "../../environment/base/EnvironmentWhereUniqueInput";
+import { ValidateNested, IsString, IsOptional } from "class-validator";
 import { Type } from "class-transformer";
+import { TagsOnResponseCreateNestedManyWithoutTagsInput } from "./TagsOnResponseCreateNestedManyWithoutTagsInput";
 
 @InputType()
 class TagCreateInput {
+  @ApiProperty({
+    required: true,
+    type: () => EnvironmentWhereUniqueInput,
+  })
+  @ValidateNested()
+  @Type(() => EnvironmentWhereUniqueInput)
+  @Field(() => EnvironmentWhereUniqueInput)
+  environment!: EnvironmentWhereUniqueInput;
+
   @ApiProperty({
     required: true,
     type: String,
@@ -27,26 +37,15 @@ class TagCreateInput {
 
   @ApiProperty({
     required: false,
-    type: () => PostCreateNestedManyWithoutTagsInput,
+    type: () => TagsOnResponseCreateNestedManyWithoutTagsInput,
   })
   @ValidateNested()
-  @Type(() => PostCreateNestedManyWithoutTagsInput)
+  @Type(() => TagsOnResponseCreateNestedManyWithoutTagsInput)
   @IsOptional()
-  @Field(() => PostCreateNestedManyWithoutTagsInput, {
+  @Field(() => TagsOnResponseCreateNestedManyWithoutTagsInput, {
     nullable: true,
   })
-  posts?: PostCreateNestedManyWithoutTagsInput;
-
-  @ApiProperty({
-    required: false,
-    type: String,
-  })
-  @IsString()
-  @IsOptional()
-  @Field(() => String, {
-    nullable: true,
-  })
-  slug?: string | null;
+  responses?: TagsOnResponseCreateNestedManyWithoutTagsInput;
 }
 
 export { TagCreateInput as TagCreateInput };

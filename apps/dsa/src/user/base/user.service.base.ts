@@ -10,7 +10,14 @@ https://docs.amplication.com/how-to/custom-code
 ------------------------------------------------------------------------------
   */
 import { PrismaService } from "../../prisma/prisma.service";
-import { Prisma, User } from "@prisma/client";
+import {
+  Prisma,
+  User,
+  Account,
+  Invite,
+  Membership,
+  ResponseNote,
+} from "@prisma/client";
 
 export class UserServiceBase {
   constructor(protected readonly prisma: PrismaService) {}
@@ -45,5 +52,60 @@ export class UserServiceBase {
     args: Prisma.SelectSubset<T, Prisma.UserDeleteArgs>
   ): Promise<User> {
     return this.prisma.user.delete(args);
+  }
+
+  async findAccounts(
+    parentId: string,
+    args: Prisma.AccountFindManyArgs
+  ): Promise<Account[]> {
+    return this.prisma.user
+      .findUniqueOrThrow({
+        where: { id: parentId },
+      })
+      .accounts(args);
+  }
+
+  async findInvitesAccepted(
+    parentId: string,
+    args: Prisma.InviteFindManyArgs
+  ): Promise<Invite[]> {
+    return this.prisma.user
+      .findUniqueOrThrow({
+        where: { id: parentId },
+      })
+      .invitesAccepted(args);
+  }
+
+  async findInvitesCreated(
+    parentId: string,
+    args: Prisma.InviteFindManyArgs
+  ): Promise<Invite[]> {
+    return this.prisma.user
+      .findUniqueOrThrow({
+        where: { id: parentId },
+      })
+      .invitesCreated(args);
+  }
+
+  async findMemberships(
+    parentId: string,
+    args: Prisma.MembershipFindManyArgs
+  ): Promise<Membership[]> {
+    return this.prisma.user
+      .findUniqueOrThrow({
+        where: { id: parentId },
+      })
+      .memberships(args);
+  }
+
+  async findResponseNotes(
+    parentId: string,
+    args: Prisma.ResponseNoteFindManyArgs
+  ): Promise<ResponseNote[]> {
+    return this.prisma.user
+      .findUniqueOrThrow({
+        where: { id: parentId },
+      })
+      .responseNotes(args);
   }
 }

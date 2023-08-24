@@ -20,8 +20,9 @@ import { TagCountArgs } from "./TagCountArgs";
 import { TagFindManyArgs } from "./TagFindManyArgs";
 import { TagFindUniqueArgs } from "./TagFindUniqueArgs";
 import { Tag } from "./Tag";
-import { PostFindManyArgs } from "../../post/base/PostFindManyArgs";
-import { Post } from "../../post/base/Post";
+import { TagsOnResponseFindManyArgs } from "../../tagsOnResponse/base/TagsOnResponseFindManyArgs";
+import { TagsOnResponse } from "../../tagsOnResponse/base/TagsOnResponse";
+import { Environment } from "../../environment/base/Environment";
 import { TagService } from "../tag.service";
 @graphql.Resolver(() => Tag)
 export class TagResolverBase {
@@ -54,7 +55,13 @@ export class TagResolverBase {
   async createTag(@graphql.Args() args: CreateTagArgs): Promise<Tag> {
     return await this.service.create({
       ...args,
-      data: args.data,
+      data: {
+        ...args.data,
+
+        environment: {
+          connect: args.data.environment,
+        },
+      },
     });
   }
 
@@ -63,7 +70,13 @@ export class TagResolverBase {
     try {
       return await this.service.update({
         ...args,
-        data: args.data,
+        data: {
+          ...args.data,
+
+          environment: {
+            connect: args.data.environment,
+          },
+        },
       });
     } catch (error) {
       if (isRecordNotFoundError(error)) {
@@ -89,17 +102,32 @@ export class TagResolverBase {
     }
   }
 
-  @graphql.ResolveField(() => [Post], { name: "posts" })
-  async resolveFieldPosts(
+  @graphql.ResolveField(() => [TagsOnResponse], { name: "responses" })
+  async resolveFieldResponses(
     @graphql.Parent() parent: Tag,
-    @graphql.Args() args: PostFindManyArgs
-  ): Promise<Post[]> {
-    const results = await this.service.findPosts(parent.id, args);
+    @graphql.Args() args: TagsOnResponseFindManyArgs
+  ): Promise<TagsOnResponse[]> {
+    const results = await this.service.findResponses(parent.id, args);
 
     if (!results) {
       return [];
     }
 
     return results;
+  }
+
+  @graphql.ResolveField(() => Environment, {
+    nullable: true,
+    name: "environment",
+  })
+  async resolveFieldEnvironment(
+    @graphql.Parent() parent: Tag
+  ): Promise<Environment | null> {
+    const result = await this.service.getEnvironment(parent.id);
+
+    if (!result) {
+      return null;
+    }
+    return result;
   }
 }

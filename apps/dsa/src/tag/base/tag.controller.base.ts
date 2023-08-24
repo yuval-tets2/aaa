@@ -23,9 +23,9 @@ import { TagWhereUniqueInput } from "./TagWhereUniqueInput";
 import { TagFindManyArgs } from "./TagFindManyArgs";
 import { TagUpdateInput } from "./TagUpdateInput";
 import { Tag } from "./Tag";
-import { Post } from "../../post/base/Post";
-import { PostFindManyArgs } from "../../post/base/PostFindManyArgs";
-import { PostWhereUniqueInput } from "../../post/base/PostWhereUniqueInput";
+import { TagsOnResponseFindManyArgs } from "../../tagsOnResponse/base/TagsOnResponseFindManyArgs";
+import { TagsOnResponse } from "../../tagsOnResponse/base/TagsOnResponse";
+import { TagsOnResponseWhereUniqueInput } from "../../tagsOnResponse/base/TagsOnResponseWhereUniqueInput";
 
 export class TagControllerBase {
   constructor(protected readonly service: TagService) {}
@@ -33,12 +33,24 @@ export class TagControllerBase {
   @swagger.ApiCreatedResponse({ type: Tag })
   async create(@common.Body() data: TagCreateInput): Promise<Tag> {
     return await this.service.create({
-      data: data,
+      data: {
+        ...data,
+
+        environment: {
+          connect: data.environment,
+        },
+      },
       select: {
         createdAt: true,
+
+        environment: {
+          select: {
+            id: true,
+          },
+        },
+
         id: true,
         name: true,
-        slug: true,
         updatedAt: true,
       },
     });
@@ -53,9 +65,15 @@ export class TagControllerBase {
       ...args,
       select: {
         createdAt: true,
+
+        environment: {
+          select: {
+            id: true,
+          },
+        },
+
         id: true,
         name: true,
-        slug: true,
         updatedAt: true,
       },
     });
@@ -71,9 +89,15 @@ export class TagControllerBase {
       where: params,
       select: {
         createdAt: true,
+
+        environment: {
+          select: {
+            id: true,
+          },
+        },
+
         id: true,
         name: true,
-        slug: true,
         updatedAt: true,
       },
     });
@@ -95,12 +119,24 @@ export class TagControllerBase {
     try {
       return await this.service.update({
         where: params,
-        data: data,
+        data: {
+          ...data,
+
+          environment: {
+            connect: data.environment,
+          },
+        },
         select: {
           createdAt: true,
+
+          environment: {
+            select: {
+              id: true,
+            },
+          },
+
           id: true,
           name: true,
-          slug: true,
           updatedAt: true,
         },
       });
@@ -125,9 +161,15 @@ export class TagControllerBase {
         where: params,
         select: {
           createdAt: true,
+
+          environment: {
+            select: {
+              id: true,
+            },
+          },
+
           id: true,
           name: true,
-          slug: true,
           updatedAt: true,
         },
       });
@@ -141,33 +183,29 @@ export class TagControllerBase {
     }
   }
 
-  @common.Get("/:id/posts")
-  @ApiNestedQuery(PostFindManyArgs)
-  async findManyPosts(
+  @common.Get("/:id/responses")
+  @ApiNestedQuery(TagsOnResponseFindManyArgs)
+  async findManyResponses(
     @common.Req() request: Request,
     @common.Param() params: TagWhereUniqueInput
-  ): Promise<Post[]> {
-    const query = plainToClass(PostFindManyArgs, request.query);
-    const results = await this.service.findPosts(params.id, {
+  ): Promise<TagsOnResponse[]> {
+    const query = plainToClass(TagsOnResponseFindManyArgs, request.query);
+    const results = await this.service.findResponses(params.id, {
       ...query,
       select: {
-        author: {
+        id: true,
+
+        response: {
           select: {
             id: true,
           },
         },
 
-        content: true,
-        createdAt: true,
-        draft: true,
-        featuredImage: true,
-        id: true,
-        metaDescription: true,
-        metaTitle: true,
-        publishedAt: true,
-        slug: true,
-        title: true,
-        updatedAt: true,
+        tag: {
+          select: {
+            id: true,
+          },
+        },
       },
     });
     if (results === null) {
@@ -178,13 +216,13 @@ export class TagControllerBase {
     return results;
   }
 
-  @common.Post("/:id/posts")
-  async connectPosts(
+  @common.Post("/:id/responses")
+  async connectResponses(
     @common.Param() params: TagWhereUniqueInput,
-    @common.Body() body: PostWhereUniqueInput[]
+    @common.Body() body: TagsOnResponseWhereUniqueInput[]
   ): Promise<void> {
     const data = {
-      posts: {
+      responses: {
         connect: body,
       },
     };
@@ -195,13 +233,13 @@ export class TagControllerBase {
     });
   }
 
-  @common.Patch("/:id/posts")
-  async updatePosts(
+  @common.Patch("/:id/responses")
+  async updateResponses(
     @common.Param() params: TagWhereUniqueInput,
-    @common.Body() body: PostWhereUniqueInput[]
+    @common.Body() body: TagsOnResponseWhereUniqueInput[]
   ): Promise<void> {
     const data = {
-      posts: {
+      responses: {
         set: body,
       },
     };
@@ -212,13 +250,13 @@ export class TagControllerBase {
     });
   }
 
-  @common.Delete("/:id/posts")
-  async disconnectPosts(
+  @common.Delete("/:id/responses")
+  async disconnectResponses(
     @common.Param() params: TagWhereUniqueInput,
-    @common.Body() body: PostWhereUniqueInput[]
+    @common.Body() body: TagsOnResponseWhereUniqueInput[]
   ): Promise<void> {
     const data = {
-      posts: {
+      responses: {
         disconnect: body,
       },
     };

@@ -7,49 +7,436 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model User {
-  createdAt DateTime @default(now())
-  firstName String?
-  id        String   @id @default(cuid())
-  lastName  String?
-  roles     Json
-  updatedAt DateTime @updatedAt
+model Webhook {
+  createdAt     DateTime              @default(now()) @map(name: "created_at")
+  environment   Environment           @relation(fields: [environmentId], references: [id])
+  environmentId String
+  id            String                @id @default(cuid())
+  name          String?
+  surveyIds     String
+  triggers      EnumWebhookTriggers[]
+  updatedAt     DateTime              @updatedAt @map(name: "updated_at")
+  url           String
 }
 
-model Post {
-  author          Author    @relation(fields: [authorId], references: [id])
-  authorId        String
-  content         String
-  createdAt       DateTime  @default(now())
-  draft           Boolean?
-  featuredImage   String
-  id              String    @id @default(cuid())
-  metaDescription String?
-  metaTitle       String?
-  publishedAt     DateTime?
-  slug            String?   @unique
-  tags            Tag[]
-  title           String
-  updatedAt       DateTime  @updatedAt
+model Attribute {
+  attributeClass   AttributeClass @relation(fields: [attributeClassId], references: [id])
+  attributeClassId String
+  createdAt        DateTime       @default(now()) @map(name: "created_at")
+  id               String         @id @default(cuid())
+  person           Person         @relation(fields: [personId], references: [id])
+  personId         String
+  updatedAt        DateTime       @updatedAt @map(name: "updated_at")
+  value            String
+
+  @@unique([attributeClassId, personId])
 }
 
-model Author {
-  createdAt    DateTime @default(now())
-  firstName    String
-  id           String   @id @default(cuid())
-  lastName     String?
-  posts        Post[]
-  profileImage String?
-  slug         String?  @unique
-  twitter      String?
-  updatedAt    DateTime @updatedAt
+model AttributeClass {
+  archived         Boolean                 @default(false)
+  attributeFilters SurveyAttributeFilter[]
+  attributes       Attribute[]
+  createdAt        DateTime                @default(now()) @map(name: "created_at")
+  description      String?
+  environment      Environment             @relation(fields: [environmentId], references: [id])
+  environmentId    String
+  id               String                  @id @default(cuid())
+  name             String
+  type             EnumAttributeClassType
+  updatedAt        DateTime                @updatedAt @map(name: "updated_at")
+
+  @@unique([name, environmentId])
+}
+
+model Person {
+  attributes    Attribute[]
+  createdAt     DateTime    @default(now()) @map(name: "created_at")
+  displays      Display[]
+  environment   Environment @relation(fields: [environmentId], references: [id])
+  environmentId String
+  id            String      @id @default(cuid())
+  responses     Response[]
+  sessions      Session[]
+  updatedAt     DateTime    @updatedAt @map(name: "updated_at")
+}
+
+model Response {
+  createdAt        DateTime         @default(now()) @map(name: "created_at")
+  data             Json             @default("{}")
+  finished         Boolean          @default(false)
+  id               String           @id @default(cuid())
+  meta             Json             @default("{}")
+  notes            ResponseNote[]
+  person           Person?          @relation(fields: [personId], references: [id])
+  personId         String?
+  personAttributes Json?
+  survey           Survey           @relation(fields: [surveyId], references: [id])
+  surveyId         String
+  tags             TagsOnResponse[]
+  updatedAt        DateTime         @updatedAt @map(name: "updated_at")
+}
+
+model ResponseNote {
+  createdAt  DateTime @default(now()) @map(name: "created_at")
+  id         String   @id @default(cuid())
+  response   Response @relation(fields: [responseId], references: [id])
+  responseId String
+  text       String
+  updatedAt  DateTime @updatedAt @map(name: "updated_at")
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
 }
 
 model Tag {
-  createdAt DateTime @default(now())
+  createdAt     DateTime         @default(now()) @map(name: "created_at")
+  environment   Environment      @relation(fields: [environmentId], references: [id])
+  environmentId String
+  id            String           @id @default(cuid())
+  name          String
+  responses     TagsOnResponse[]
+  updatedAt     DateTime         @updatedAt @map(name: "updated_at")
+
+  @@unique([environmentId, name])
+}
+
+model TagsOnResponse {
+  id         String   @id @default(cuid())
+  response   Response @relation(fields: [responseId], references: [id])
+  responseId String
+  tag        Tag      @relation(fields: [tagId], references: [id])
+  tagId      String
+
+  @@unique([responseId, tagId])
+  @@map("TagsOnResponses")
+}
+
+model Display {
+  createdAt DateTime          @default(now()) @map(name: "created_at")
+  id        String            @id @default(cuid())
+  person    Person?           @relation(fields: [personId], references: [id])
+  personId  String?
+  status    EnumDisplayStatus @default(seen)
+  survey    Survey            @relation(fields: [surveyId], references: [id])
+  surveyId  String
+  updatedAt DateTime          @updatedAt @map(name: "updated_at")
+}
+
+model SurveyTrigger {
+  createdAt    DateTime   @default(now()) @map(name: "created_at")
+  eventClass   EventClass @relation(fields: [eventClassId], references: [id])
+  eventClassId String
+  id           String     @id @default(cuid())
+  survey       Survey     @relation(fields: [surveyId], references: [id])
+  surveyId     String
+  updatedAt    DateTime   @updatedAt @map(name: "updated_at")
+
+  @@unique([surveyId, eventClassId])
+}
+
+model SurveyAttributeFilter {
+  attributeClass   AttributeClass                     @relation(fields: [attributeClassId], references: [id])
+  attributeClassId String
+  condition        EnumSurveyAttributeFilterCondition
+  createdAt        DateTime                           @default(now()) @map(name: "created_at")
+  id               String                             @id @default(cuid())
+  survey           Survey                             @relation(fields: [surveyId], references: [id])
+  surveyId         String
+  updatedAt        DateTime                           @updatedAt @map(name: "updated_at")
+  value            String
+
+  @@unique([surveyId, attributeClassId])
+}
+
+model Survey {
+  attributeFilters    SurveyAttributeFilter[]
+  autoClose           Int?
+  autoComplete        Int?
+  closeOnDate         DateTime?
+  createdAt           DateTime                @default(now()) @map(name: "created_at")
+  delay               Int                     @default(0)
+  displayOption       EnumSurveyDisplayOption @default(displayOnce)
+  displays            Display[]
+  environment         Environment             @relation(fields: [environmentId], references: [id])
+  environmentId       String
+  id                  String                  @id @default(cuid())
+  name                String
+  questions           Json                    @default("[]")
+  recontactDays       Int?
+  redirectUrl         String?
+  responses           Response[]
+  status              EnumSurveyStatus        @default(draft)
+  surveyClosedMessage Json?
+  thankYouCard        Json                    @default("{\"enabled\": false}")
+  triggers            SurveyTrigger[]
+  type                EnumSurveyType          @default(web)
+  updatedAt           DateTime                @updatedAt @map(name: "updated_at")
+}
+
+model Event {
+  createdAt    DateTime    @default(now()) @map(name: "created_at")
+  eventClass   EventClass? @relation(fields: [eventClassId], references: [id])
+  eventClassId String?
+  id           String      @id @default(cuid())
+  properties   Json        @default("{}")
+  session      Session     @relation(fields: [sessionId], references: [id])
+  sessionId    String
+}
+
+model EventClass {
+  createdAt     DateTime           @default(now()) @map(name: "created_at")
+  description   String?
+  environment   Environment        @relation(fields: [environmentId], references: [id])
+  environmentId String
+  events        Event[]
+  id            String             @id @default(cuid())
+  name          String
+  noCodeConfig  Json?
+  surveys       SurveyTrigger[]
+  type          EnumEventClassType
+  updatedAt     DateTime           @updatedAt @map(name: "updated_at")
+
+  @@unique([name, environmentId])
+}
+
+model Session {
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  events    Event[]
+  expiresAt DateTime @default(now())
   id        String   @id @default(cuid())
-  name      String   @unique
-  posts     Post[]
-  slug      String?  @unique
-  updatedAt DateTime @updatedAt
+  person    Person   @relation(fields: [personId], references: [id])
+  personId  String
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+}
+
+model Environment {
+  apiKeys              ApiKey[]
+  attributeClasses     AttributeClass[]
+  createdAt            DateTime            @default(now()) @map(name: "created_at")
+  eventClasses         EventClass[]
+  id                   String              @id @default(cuid())
+  people               Person[]
+  product              Product             @relation(fields: [productId], references: [id])
+  productId            String
+  surveys              Survey[]
+  tags                 Tag[]
+  type                 EnumEnvironmentType
+  updatedAt            DateTime            @updatedAt @map(name: "updated_at")
+  webhooks             Webhook[]
+  widgetSetupCompleted Boolean             @default(false)
+}
+
+model Product {
+  brandColor           String               @default("#64748b")
+  clickOutsideClose    Boolean              @default(true)
+  createdAt            DateTime             @default(now()) @map(name: "created_at")
+  darkOverlay          Boolean              @default(false)
+  environments         Environment[]
+  formbricksSignature  Boolean              @default(true)
+  highlightBorderColor String?
+  id                   String               @id @default(cuid())
+  name                 String
+  placement            EnumProductPlacement @default(bottomRight)
+  recontactDays        Int                  @default(7)
+  team                 Team                 @relation(fields: [teamId], references: [id])
+  teamId               String
+  updatedAt            DateTime             @updatedAt @map(name: "updated_at")
+}
+
+model Team {
+  createdAt        DateTime     @default(now()) @map(name: "created_at")
+  id               String       @id @default(cuid())
+  invites          Invite[]
+  memberships      Membership[]
+  name             String
+  plan             EnumTeamPlan @default(free)
+  products         Product[]
+  stripeCustomerId String?
+  updatedAt        DateTime     @updatedAt @map(name: "updated_at")
+}
+
+model Membership {
+  accepted Boolean            @default(false)
+  id       String             @id @default(cuid())
+  role     EnumMembershipRole
+  team     Team               @relation(fields: [teamId], references: [id])
+  teamId   String
+  user     User               @relation(fields: [userId], references: [id])
+  userId   String
+
+  @@unique([userId, teamId])
+}
+
+model Invite {
+  accepted   Boolean        @default(false)
+  acceptor   User?          @relation(name: "acceptor", fields: [acceptorId], references: [id])
+  acceptorId String?
+  createdAt  DateTime       @default(now())
+  creator    User           @relation(name: "creator", fields: [creatorId], references: [id])
+  creatorId  String
+  email      String
+  expiresAt  DateTime
+  id         String         @id @default(cuid())
+  name       String?
+  role       EnumInviteRole @default(admin)
+  team       Team           @relation(fields: [teamId], references: [id])
+  teamId     String
+
+  @@index([email, teamId], name: "email_teamId_unique")
+}
+
+model ApiKey {
+  createdAt     DateTime    @default(now())
+  environment   Environment @relation(fields: [environmentId], references: [id])
+  environmentId String
+  hashedKey     String      @unique
+  id            String      @id @default(cuid())
+  label         String?
+  lastUsedAt    DateTime?
+}
+
+model Account {
+  accessToken       String?  @map("access_token") @db.Text()
+  createdAt         DateTime @default(now()) @map(name: "created_at")
+  expiresAt         Int?     @map("expires_at")
+  id                String   @id @default(cuid())
+  idToken           String?  @map("id_token") @db.Text()
+  provider          String
+  providerAccountId String
+  refreshToken      String?  @map("refresh_token") @db.Text()
+  scope             String?
+  sessionState      String?  @map("session_state")
+  tokenType         String?  @map("token_type")
+  typeField         String   @map("type")
+  updatedAt         DateTime @updatedAt @map(name: "updated_at")
+  user              User?    @relation(fields: [userId], references: [id])
+  userId            String?
+
+  @@unique([provider, providerAccountId])
+}
+
+model User {
+  accounts                  Account[]
+  createdAt                 DateTime                 @default(now()) @map(name: "created_at")
+  email                     String                   @unique
+  emailVerified             DateTime?                @map(name: "email_verified")
+  groupId                   String?
+  id                        String                   @id @default(cuid())
+  identityProvider          EnumUserIdentityProvider @default(email)
+  identityProviderAccountId String?
+  invitesAccepted           Invite[]                 @relation(name: "acceptor")
+  invitesCreated            Invite[]                 @relation(name: "creator")
+  memberships               Membership[]
+  name                      String?
+  notificationSettings      Json                     @default("{}")
+  objective                 EnumUserObjective?
+  onboardingCompleted       Boolean                  @default(false)
+  responseNotes             ResponseNote[]
+  role                      EnumUserRole?
+  updatedAt                 DateTime                 @updatedAt @map(name: "updated_at")
+}
+
+enum EnumWebhookTriggers {
+  responseCreated
+  responseUpdated
+  responseFinished
+}
+
+enum EnumAttributeClassType {
+  code
+  noCode
+  automatic
+}
+
+enum EnumDisplayStatus {
+  seen
+  responded
+}
+
+enum EnumSurveyAttributeFilterCondition {
+  equals
+  notEquals
+}
+
+enum EnumSurveyDisplayOption {
+  displayOnce
+  displayMultiple
+  respondMultiple
+}
+
+enum EnumSurveyStatus {
+  draft
+  inProgress
+  paused
+  completed
+  archived
+}
+
+enum EnumSurveyType {
+  email
+  link
+  mobile
+  web
+}
+
+enum EnumEventClassType {
+  code
+  noCode
+  automatic
+}
+
+enum EnumEnvironmentType {
+  production
+  development
+}
+
+enum EnumProductPlacement {
+  bottomLeft
+  bottomRight
+  topLeft
+  topRight
+  center
+}
+
+enum EnumTeamPlan {
+  free
+  pro
+}
+
+enum EnumMembershipRole {
+  owner
+  admin
+  editor
+  developer
+  viewer
+}
+
+enum EnumInviteRole {
+  owner
+  admin
+  editor
+  developer
+  viewer
+}
+
+enum EnumUserIdentityProvider {
+  email
+  github
+  google
+}
+
+enum EnumUserObjective {
+  increase_conversion
+  improve_user_retention
+  increase_user_adoption
+  sharpen_marketing_messaging
+  support_sales
+  other
+}
+
+enum EnumUserRole {
+  project_manager
+  engineer
+  founder
+  marketing_specialist
+  other
 }

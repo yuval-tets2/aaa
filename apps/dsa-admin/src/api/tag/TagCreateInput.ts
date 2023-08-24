@@ -1,7 +1,8 @@
-import { PostCreateNestedManyWithoutTagsInput } from "./PostCreateNestedManyWithoutTagsInput";
+import { EnvironmentWhereUniqueInput } from "../environment/EnvironmentWhereUniqueInput";
+import { TagsOnResponseCreateNestedManyWithoutTagsInput } from "./TagsOnResponseCreateNestedManyWithoutTagsInput";
 
 export type TagCreateInput = {
+  environment: EnvironmentWhereUniqueInput;
   name: string;
-  posts?: PostCreateNestedManyWithoutTagsInput;
-  slug?: string | null;
+  responses?: TagsOnResponseCreateNestedManyWithoutTagsInput;
 };

@@ -11,9 +11,10 @@ https://docs.amplication.com/how-to/custom-code
   */
 import { ObjectType, Field } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDate, IsString, ValidateNested, IsOptional } from "class-validator";
+import { IsDate, ValidateNested, IsString, IsOptional } from "class-validator";
 import { Type } from "class-transformer";
-import { Post } from "../../post/base/Post";
+import { Environment } from "../../environment/base/Environment";
+import { TagsOnResponse } from "../../tagsOnResponse/base/TagsOnResponse";
 
 @ObjectType()
 class Tag {
@@ -24,6 +25,14 @@ class Tag {
   @Type(() => Date)
   @Field(() => Date)
   createdAt!: Date;
+
+  @ApiProperty({
+    required: true,
+    type: () => Environment,
+  })
+  @ValidateNested()
+  @Type(() => Environment)
+  environment?: Environment;
 
   @ApiProperty({
     required: true,
@@ -43,23 +52,12 @@ class Tag {
 
   @ApiProperty({
     required: false,
-    type: () => [Post],
+    type: () => [TagsOnResponse],
   })
   @ValidateNested()
-  @Type(() => Post)
+  @Type(() => TagsOnResponse)
   @IsOptional()
-  posts?: Array<Post>;
-
-  @ApiProperty({
-    required: false,
-    type: String,
-  })
-  @IsString()
-  @IsOptional()
-  @Field(() => String, {
-    nullable: true,
-  })
-  slug!: string | null;
+  responses?: Array<TagsOnResponse>;
 
   @ApiProperty({
     required: true,

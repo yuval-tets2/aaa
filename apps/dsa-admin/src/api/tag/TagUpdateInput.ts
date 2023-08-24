@@ -1,7 +1,8 @@
-import { PostUpdateManyWithoutTagsInput } from "./PostUpdateManyWithoutTagsInput";
+import { EnvironmentWhereUniqueInput } from "../environment/EnvironmentWhereUniqueInput";
+import { TagsOnResponseUpdateManyWithoutTagsInput } from "./TagsOnResponseUpdateManyWithoutTagsInput";
 
 export type TagUpdateInput = {
+  environment?: EnvironmentWhereUniqueInput;
   name?: string;
-  posts?: PostUpdateManyWithoutTagsInput;
-  slug?: string | null;
+  responses?: TagsOnResponseUpdateManyWithoutTagsInput;
 };
